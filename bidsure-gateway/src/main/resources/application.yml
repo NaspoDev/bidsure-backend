@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: bidsure-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/users/**
+        - id: auction-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/auctions/**
+        - id: bid-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/bids/**
+        - id: order-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/orders/**
+        - id: payment-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/payments/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "https://prod-url.com" # prod
+              - "http://localhost:3000" # dev
+            allowedMethods: "*"
+            allowedHeaders: "*"
