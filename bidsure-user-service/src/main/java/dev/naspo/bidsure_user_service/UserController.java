@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     @GetMapping("/{id}")
-    private String getUser(@PathVariable String id) {
+    private String getUser(@PathVariable int id) {
         // TODO: implement proper logic
         return "Will soon return the user with id: " + id;
     }
@@ -15,7 +15,7 @@ public class UserController {
     // TODO: Make put and post mappings once user model is created
 
     @DeleteMapping("/{id}")
-    private String deleteUser(@PathVariable String id) {
+    private String deleteUser(@PathVariable int id) {
         return "User with the id " + id + " has been deleted";
     }
 }
