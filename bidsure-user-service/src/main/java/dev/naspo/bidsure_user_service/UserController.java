@@ -1,15 +1,21 @@
 package dev.naspo.bidsure_user_service;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    @GetMapping
-    private String[] getUsers() {
-        return new String[]{"Lauren", "Athy", "Justin", "Laya"};
+    @GetMapping("/{id}")
+    private String getUser(@PathVariable String id) {
+        // TODO: implement proper logic
+        return "Will soon return the user with id: " + id;
+    }
+
+    // TODO: Make put and post mappings once user model is created
+
+    @DeleteMapping("/{id}")
+    private String deleteUser(@PathVariable String id) {
+        return "User with the id " + id + " has been deleted";
     }
 }
