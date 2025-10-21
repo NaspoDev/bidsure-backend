@@ -1,5 +1,6 @@
 package dev.naspo.bidsure_user_service;
 
+import dev.naspo.bidsure_user_service.models.User;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -10,6 +11,10 @@ public class UserController {
     private String getUser(@PathVariable int id) {
         // TODO: implement proper logic
         return "Will soon return the user with id: " + id;
+    }
+
+    private String createUser(@RequestBody User user) {
+
     }
 
     // TODO: Make put and post mappings once user model is created
