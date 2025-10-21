@@ -25,6 +25,7 @@ public class User {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    // TODO: Is this valid for Hibernate? (Probably not)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
     private Address address;
 }

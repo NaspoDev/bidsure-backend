@@ -12,7 +12,8 @@ public class Address {
     @Column(name = "user_id")
     private int userId;
 
-    private String address;
+    @Column(name = "address_line_1")
+    private String addressLine1;
 
     @Column(name = "address_line_2")
     private String addressLine2;
