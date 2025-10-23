@@ -1,11 +1,13 @@
 package dev.naspo.bidsure_user_service;
 
 import dev.naspo.bidsure_user_service.models.User;
+import jakarta.annotation.PreDestroy;
 import lombok.Getter;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 
+// Manages the Hibernate SessionFactory.
 public class HibernateUtil {
 
     @Getter
@@ -20,6 +22,7 @@ public class HibernateUtil {
     private HibernateUtil() {
     }
 
+    // Creates and configures the SessionFactory with db info, HikariCP, and other.
     private static SessionFactory buildSessionFactory() {
         return new Configuration()
                 // DB related properties
@@ -35,6 +38,7 @@ public class HibernateUtil {
                 .buildSessionFactory();
     }
 
+    @PreDestroy
     public static void shutdown() {
         if (sessionFactory != null) {
             sessionFactory.close();
