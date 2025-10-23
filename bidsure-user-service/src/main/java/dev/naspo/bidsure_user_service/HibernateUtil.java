@@ -1,12 +1,14 @@
 package dev.naspo.bidsure_user_service;
 
 import dev.naspo.bidsure_user_service.models.User;
+import lombok.Getter;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 
 public class HibernateUtil {
 
+    @Getter
     private static SessionFactory sessionFactory = buildSessionFactory();
 
     // Building the JDBC connection url from environment variables.
@@ -31,10 +33,6 @@ public class HibernateUtil {
                 .setProperty(AvailableSettings.HIGHLIGHT_SQL, true)
                 .addAnnotatedClass(User.class)
                 .buildSessionFactory();
-    }
-
-    public static SessionFactory getSessionFactory() {
-        return sessionFactory;
     }
 
     public static void shutdown() {

@@ -36,9 +36,4 @@ public class User {
     @NotEmpty
     @Column(name = "phone_number")
     private String phoneNumber;
-
-    @NotEmpty
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id")
-    private Address address;
 }

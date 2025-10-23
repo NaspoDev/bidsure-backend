@@ -1,5 +1,6 @@
-package dev.naspo.bidsure_user_service;
+package dev.naspo.bidsure_user_service.controllers;
 
+import dev.naspo.bidsure_user_service.HibernateUtil;
 import dev.naspo.bidsure_user_service.models.User;
 import jakarta.validation.Valid;
 import org.hibernate.Session;
