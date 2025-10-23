@@ -2,8 +2,10 @@ package dev.naspo.bidsure_user_service.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
@@ -26,9 +28,11 @@ public class Address {
 
     @NotEmpty
     @Column(name = "postal_code")
+    @Size(min = 7, max = 7) // Ex. "L4J 5J2"
     private String postalCode;
 
     @NotEmpty
+    @Size(min = 2, max = 2) // Ex. "ON" for Ontario.
     private String province;
 
     @NotEmpty

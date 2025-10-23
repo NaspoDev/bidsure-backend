@@ -3,6 +3,7 @@ package dev.naspo.bidsure_user_service.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,6 +18,7 @@ public class User {
     private int id;
 
     @NotEmpty
+    @Size(max = 50)
     private String username;
 
     @NotEmpty
@@ -26,10 +28,12 @@ public class User {
     private String email;
 
     @NotEmpty
+    @Size(max = 50)
     @Column(name = "first_name")
     private String firstName;
 
     @NotEmpty
+    @Size(max = 50)
     @Column(name = "last_name")
     private String lastName;
 
