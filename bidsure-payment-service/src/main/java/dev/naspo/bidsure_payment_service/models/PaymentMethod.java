@@ -2,6 +2,7 @@ package dev.naspo.bidsure_payment_service.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -45,11 +46,7 @@ public class PaymentMethod {
     )
     private String cvv;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @OneToOne
-    @JoinColumn(name = "address_id")
-    private Address address;
+    @NotNull
+    @Column(name = "user_id")
+    private int userId;
 }
