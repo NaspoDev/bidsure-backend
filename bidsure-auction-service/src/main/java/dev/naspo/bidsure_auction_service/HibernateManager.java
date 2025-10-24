@@ -1,7 +1,7 @@
-package dev.naspo.bidsure_user_service;
+package dev.naspo.bidsure_auction_service;
 
-import dev.naspo.bidsure_user_service.models.Address;
-import dev.naspo.bidsure_user_service.models.User;
+import dev.naspo.bidsure_auction_service.models.Auction;
+import dev.naspo.bidsure_auction_service.models.User;
 import jakarta.annotation.PreDestroy;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AvailableSettings;
@@ -39,8 +39,8 @@ public class HibernateManager {
                 .setProperty(AvailableSettings.SHOW_SQL, true)
                 .setProperty(AvailableSettings.FORMAT_SQL, true)
                 .setProperty(AvailableSettings.HIGHLIGHT_SQL, true)
+                .addAnnotatedClass(Auction.class)
                 .addAnnotatedClass(User.class)
-                .addAnnotatedClass(Address.class)
                 .buildSessionFactory();
     }
 
