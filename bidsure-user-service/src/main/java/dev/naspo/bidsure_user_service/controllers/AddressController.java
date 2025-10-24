@@ -1,10 +1,11 @@
 package dev.naspo.bidsure_user_service.controllers;
 
-import dev.naspo.bidsure_user_service.HibernateUtil;
+import dev.naspo.bidsure_user_service.HibernateManager;
 import dev.naspo.bidsure_user_service.models.Address;
 import dev.naspo.bidsure_user_service.models.User;
 import jakarta.validation.Valid;
 import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,12 @@ import java.util.List;
 @RequestMapping("/users/{userId}/addresses")
 public class AddressController {
 
+    @Autowired
+    HibernateManager hibernateManager;
+
     @PostMapping
     public ResponseEntity<Address> createAddress(@PathVariable int userId, @Valid @RequestBody Address address) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
             // First find the user.
@@ -40,7 +44,7 @@ public class AddressController {
     // Returns all addresses for the user.
     @GetMapping
     public ResponseEntity<List<Address>> getUserAddresses(@PathVariable int userId) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
             List<Address> addresses = session.createQuery("from Address a where a.user.id = :userId", Address.class)
@@ -57,7 +61,7 @@ public class AddressController {
     // Update a specific address based on the id.
     @PutMapping("/{addressId}")
     public ResponseEntity<Address> updateAddress(@PathVariable int addressId, @Valid @RequestBody Address updatedAddress) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
             // First find the address.
@@ -79,7 +83,7 @@ public class AddressController {
     // Delete a specific address.
     @DeleteMapping("/{addressId}")
     public ResponseEntity<String> deleteAddress(@PathVariable int addressId) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
             // First find the address.

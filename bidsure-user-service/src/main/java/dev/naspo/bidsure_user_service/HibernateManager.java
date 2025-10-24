@@ -2,28 +2,32 @@ package dev.naspo.bidsure_user_service;
 
 import dev.naspo.bidsure_user_service.models.User;
 import jakarta.annotation.PreDestroy;
-import lombok.Getter;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
+import org.springframework.stereotype.Service;
 
 // Manages the Hibernate SessionFactory.
-public class HibernateUtil {
+@Service
+public class HibernateManager {
 
-    @Getter
-    private static SessionFactory sessionFactory = buildSessionFactory();
+    private SessionFactory sessionFactory;
 
-    // Building the JDBC connection url from environment variables.
-    private static final String JDBC_URL = "jdbc:mysql://"
-            + System.getenv("DATABASE_HOST") + ":"
-            + System.getenv("DATABASE_PORT") + "/"
-            + System.getenv("DATABASE_NAME");
-
-    private HibernateUtil() {
+    public SessionFactory getSessionFactory() {
+        if (sessionFactory == null) {
+            sessionFactory = buildSessionFactory();
+        }
+        return sessionFactory;
     }
 
     // Creates and configures the SessionFactory with db info, HikariCP, and other.
-    private static SessionFactory buildSessionFactory() {
+    private SessionFactory buildSessionFactory() {
+        // Building the JDBC connection url from environment variables.
+        String JDBC_URL = "jdbc:mysql://"
+                + System.getenv("DATABASE_HOST") + ":"
+                + System.getenv("DATABASE_PORT") + "/"
+                + System.getenv("DATABASE_NAME");
+
         return new Configuration()
                 // DB related properties
                 .setProperty(AvailableSettings.JAKARTA_JDBC_URL, JDBC_URL)
@@ -39,7 +43,8 @@ public class HibernateUtil {
     }
 
     @PreDestroy
-    public static void shutdown() {
+    public void shutdown() {
+        System.out.println("shutting down");
         if (sessionFactory != null) {
             sessionFactory.close();
         }

@@ -1,9 +1,10 @@
 package dev.naspo.bidsure_user_service.controllers;
 
-import dev.naspo.bidsure_user_service.HibernateUtil;
+import dev.naspo.bidsure_user_service.HibernateManager;
 import dev.naspo.bidsure_user_service.models.User;
 import jakarta.validation.Valid;
 import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +13,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users")
 public class UserController {
 
+    @Autowired
+    HibernateManager hibernateManager;
+
     @PostMapping
     public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
             session.persist(user);
             session.getTransaction().commit();
@@ -26,7 +30,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUser(@PathVariable int id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
             // Query for the user.
@@ -44,7 +48,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable int id, @Valid @RequestBody User updatedUser) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
             // First find the user.
@@ -66,7 +70,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable int id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
             // First find the user.
