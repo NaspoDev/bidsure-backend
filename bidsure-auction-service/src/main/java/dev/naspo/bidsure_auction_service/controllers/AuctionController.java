@@ -1,13 +1,17 @@
 package dev.naspo.bidsure_auction_service.controllers;
 
 import dev.naspo.bidsure_auction_service.HibernateManager;
+import dev.naspo.bidsure_auction_service.dto.AuctionDTO;
 import dev.naspo.bidsure_auction_service.models.Auction;
+import dev.naspo.bidsure_auction_service.models.User;
 import jakarta.validation.Valid;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/auctions")
@@ -17,9 +21,31 @@ public class AuctionController {
     HibernateManager hibernateManager;
 
     @PostMapping
-    public ResponseEntity<Auction> createAuction(@Valid @RequestBody Auction auction) {
+    public ResponseEntity<Auction> createAuction(@Valid @RequestBody AuctionDTO auctionDTO) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
+
+            // Query to get the entities that Auction needs.
+            User user = session.find(User.class, auctionDTO.getSellerId());
+
+            // If user is null, return a NOT FOUND response.
+            if (user == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Create an Auction and transfer it the data from the DTO.
+            Auction auction = new Auction();
+            auction.setAuctionType(auctionDTO.getAuctionType());
+            auction.setTitle(auctionDTO.getTitle());
+            auction.setItemDescription(auctionDTO.getItemDescription());
+            auction.setItemCondition(auctionDTO.getItemCondition());
+            auction.setStartingPrice(auctionDTO.getStartingPrice());
+            auction.setDutchIncrements(auctionDTO.getDutchIncrements());
+            auction.setStartingTime(auctionDTO.getStartingTime());
+            auction.setEndTime(auctionDTO.getEndTime());
+            auction.setSeller(user);
+
+            // Persist.
             session.persist(auction);
             session.getTransaction().commit();
             return ResponseEntity.status(HttpStatus.CREATED).body(auction);
@@ -28,6 +54,7 @@ public class AuctionController {
         }
     }
 
+    // Get one auction by id.
     @GetMapping("/{id}")
     public ResponseEntity<Auction> getAuction(@PathVariable int id) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
@@ -41,6 +68,24 @@ public class AuctionController {
                 return ResponseEntity.ok(auction);
             }
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // Get all auctions for a user.
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Auction>> getUserAuctions(@PathVariable int userId) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
+            session.beginTransaction();
+
+            // Query for the auctions.
+            List<Auction> auctions = session.createQuery("from Auction a where a.seller.id = :userId", Auction.class)
+                    .setParameter("userId", userId)
+                    .getResultList();
+
+            session.getTransaction().commit();
+            return ResponseEntity.ok(auctions);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

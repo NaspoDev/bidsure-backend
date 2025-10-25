@@ -9,8 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/payments/paymentmethods")
+@RequestMapping("/payments/payment-methods")
 public class PaymentMethodController {
 
     @Autowired
@@ -28,6 +30,7 @@ public class PaymentMethodController {
         }
     }
 
+    // Get an individual payment method by id.
     @GetMapping("/{id}")
     public ResponseEntity<PaymentMethod> getPaymentMethod(@PathVariable int id) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
@@ -41,6 +44,25 @@ public class PaymentMethodController {
                 return ResponseEntity.ok(paymentMethod);
             }
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // Get all a user's payment methods.
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PaymentMethod>> getUserPaymentMethod(@PathVariable int userId) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
+            session.beginTransaction();
+
+            // Query for the payment methods.
+            List<PaymentMethod> paymentMethods =
+                    session.createQuery("from PaymentMethod pm where pm.userId = :userId", PaymentMethod.class)
+                            .setParameter("userId", userId)
+                            .getResultList();
+            session.getTransaction().commit();
+
+            return ResponseEntity.ok(paymentMethods);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

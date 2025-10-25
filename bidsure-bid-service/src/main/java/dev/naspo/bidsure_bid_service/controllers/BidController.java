@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/bids")
 public class BidController {
@@ -28,6 +30,7 @@ public class BidController {
         }
     }
 
+    // Get single bid by id.
     @GetMapping("/{id}")
     public ResponseEntity<Bid> getBid(@PathVariable int id) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
@@ -41,6 +44,25 @@ public class BidController {
                 return ResponseEntity.ok(bid);
             }
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // Get all of a user's bids.
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Bid>> getUserBids(@PathVariable int userId) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
+            session.beginTransaction();
+
+            // Query for bids.
+            List<Bid> bids = session.createQuery("from Bid b where b.userId = :userId", Bid.class)
+                    .setParameter("userId", userId)
+                    .getResultList();
+
+            session.getTransaction().commit();
+
+            return ResponseEntity.ok(bids);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

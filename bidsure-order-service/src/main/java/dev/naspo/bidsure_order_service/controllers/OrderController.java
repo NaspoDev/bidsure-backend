@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
@@ -52,6 +54,7 @@ public class OrderController {
         }
     }
 
+    // Get a single order by id.
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOrder(@PathVariable int id) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
@@ -65,6 +68,25 @@ public class OrderController {
                 return ResponseEntity.ok(order);
             }
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // Get all a user's orders.
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Order>> getUserOrders(@PathVariable int userId) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
+            session.beginTransaction();
+
+            // Query for the orders.
+            List<Order> orders = session.createQuery("from Order o where o.user.id = :userId", Order.class)
+                    .setParameter("userId", userId)
+                    .getResultList();
+
+            session.getTransaction().commit();
+
+            return ResponseEntity.ok(orders);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
