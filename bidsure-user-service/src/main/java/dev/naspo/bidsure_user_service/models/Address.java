@@ -2,6 +2,7 @@ package dev.naspo.bidsure_user_service.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,7 +40,7 @@ public class Address {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @NotNull
+    @Column(name = "user_id")
+    private Integer userId;
 }

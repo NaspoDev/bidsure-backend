@@ -31,7 +31,7 @@ public class AddressController {
             }
 
             // Set the user on the Addres, then persist.
-            address.setUser(user);
+            address.setUserId(user.getId());
             session.persist(address);
 
             session.getTransaction().commit();

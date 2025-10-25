@@ -41,12 +41,12 @@ public class PaymentMethod {
     private String expiry_date;
 
     @Pattern(
-            regexp = "^\\d{3}$",
+            regexp = "^\\d{4}$",
             message = "CVV must be exactly 3 digits"
     )
     private String cvv;
 
     @NotNull
     @Column(name = "user_id")
-    private int userId;
+    private Integer userId;
 }

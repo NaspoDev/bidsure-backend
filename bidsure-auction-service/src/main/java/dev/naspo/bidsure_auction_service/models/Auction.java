@@ -38,16 +38,13 @@ public class Auction {
     @Column(name = "starting_price")
     private BigDecimal startingPrice;
 
-    @NotNull
     @Column(name = "dutch_increments")
-    private int dutchIncrements;
+    private Integer dutchIncrements;
 
-    @NotNull
-    @Column(name = "created_at")
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @NotNull
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     @NotNull
