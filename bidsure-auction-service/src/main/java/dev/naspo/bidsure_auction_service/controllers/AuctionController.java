@@ -91,6 +91,23 @@ public class AuctionController {
         }
     }
 
+    // Get all auctions. Typically used for browsing.
+    @GetMapping
+    public ResponseEntity<List<Auction>> getAllAuctions() {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
+            session.beginTransaction();
+
+            // Query for the auctions.
+            List<Auction> auctions = session.createQuery("from Auction", Auction.class)
+                    .getResultList();
+
+            session.getTransaction().commit();
+            return ResponseEntity.ok(auctions);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Auction> updateAuction(@PathVariable int id, @Valid @RequestBody Auction updatedAuction) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
