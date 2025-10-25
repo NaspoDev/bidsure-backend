@@ -1,6 +1,6 @@
 package dev.naspo.bidsure_auction_service.controllers;
 
-import dev.naspo.bidsure_auction_service.HibernateManager;
+import dev.naspo.bidsure_auction_service.services.HibernateManager;
 import dev.naspo.bidsure_auction_service.dto.AuctionDTO;
 import dev.naspo.bidsure_auction_service.models.Auction;
 import dev.naspo.bidsure_auction_service.models.User;
@@ -43,6 +43,7 @@ public class AuctionController {
             auction.setDutchIncrements(auctionDTO.getDutchIncrements());
             auction.setStartingTime(auctionDTO.getStartingTime());
             auction.setEndTime(auctionDTO.getEndTime());
+            auction.setProcessed(auctionDTO.isProcessed());
             auction.setSeller(user);
 
             // Persist.
@@ -109,20 +110,27 @@ public class AuctionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Auction> updateAuction(@PathVariable int id, @Valid @RequestBody Auction updatedAuction) {
+    public ResponseEntity<Auction> updateAuction(@PathVariable int id, @Valid @RequestBody AuctionDTO updatedAuctionDTO) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
-            // First find the auction.
-            if (session.find(Auction.class, id) == null) {
+            // First find the Auction.
+            Auction auction = session.find(Auction.class, id);
+            if (auction == null) {
                 return ResponseEntity.notFound().build();
             }
 
-            // Ensure the id of the updated auction provided in the request body matches that in the path.
-            updatedAuction.setId(id);
+            // Update the auction based on DTO.
+            auction.setAuctionType(updatedAuctionDTO.getAuctionType());
+            auction.setTitle(updatedAuctionDTO.getTitle());
+            auction.setItemDescription(updatedAuctionDTO.getItemDescription());
+            auction.setItemCondition(updatedAuctionDTO.getItemCondition());
+            auction.setStartingPrice(updatedAuctionDTO.getStartingPrice());
+            auction.setDutchIncrements(updatedAuctionDTO.getDutchIncrements());
+            auction.setStartingTime(updatedAuctionDTO.getStartingTime());
+            auction.setEndTime(updatedAuctionDTO.getEndTime());
+            auction.setProcessed(updatedAuctionDTO.isProcessed());
 
-            // Merge and update.
-            session.merge(updatedAuction);
             session.getTransaction().commit();
             return ResponseEntity.noContent().build();
         } catch (Exception e) {

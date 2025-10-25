@@ -38,6 +38,8 @@ public class AuctionDTO {
     @NotNull
     private LocalDateTime endTime;
 
+    private boolean processed;
+
     @NotNull
     private Integer sellerId;
 

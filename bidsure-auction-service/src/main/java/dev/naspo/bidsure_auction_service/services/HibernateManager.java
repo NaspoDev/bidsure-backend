@@ -1,4 +1,4 @@
-package dev.naspo.bidsure_auction_service;
+package dev.naspo.bidsure_auction_service.services;
 
 import dev.naspo.bidsure_auction_service.models.Auction;
 import dev.naspo.bidsure_auction_service.models.ItemImage;

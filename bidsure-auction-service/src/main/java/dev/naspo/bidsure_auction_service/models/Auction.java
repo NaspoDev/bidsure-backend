@@ -55,6 +55,8 @@ public class Auction {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    private boolean processed;
+
     @ManyToOne
     @JoinColumn(name = "seller_id")
     private User seller;

@@ -55,6 +55,8 @@ public class Auction {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    private boolean processed;
+
     @NotNull
     @Column(name = "seller_id")
     private Integer sellerId;

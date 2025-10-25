@@ -68,6 +68,29 @@ public class BidController {
         }
     }
 
+    // Get the winning bid for an auction.
+    @GetMapping("/winning-bid/auction/{auctionId}")
+    public ResponseEntity<Bid> getWinningBid(@PathVariable int auctionId) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
+            session.beginTransaction();
+
+            // Query for the bid.
+            Bid bid = session.createQuery(
+                    "from Bid b where b.auctionId = :auctionId and b.isWinning = true", Bid.class)
+                    .setParameter("auctionId", auctionId)
+                    .getSingleResult();
+
+            session.getTransaction().commit();
+
+            if (bid != null) {
+                return ResponseEntity.ok(bid);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Bid> updateBid(@PathVariable int id, @Valid @RequestBody Bid updatedBid) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
