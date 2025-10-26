@@ -18,6 +18,16 @@ public class Address {
     private int id;
 
     @NotEmpty
+    @Size(max = 50)
+    @Column(name = "first_name")
+    private String firstName;
+
+    @NotEmpty
+    @Size(max = 50)
+    @Column(name = "last_name")
+    private String lastName;
+
+    @NotEmpty
     @Column(name = "address_line_1")
     private String addressLine1;
 

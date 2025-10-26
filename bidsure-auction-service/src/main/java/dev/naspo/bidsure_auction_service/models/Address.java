@@ -11,6 +11,14 @@ public class Address {
     private int id;
 
     @NotEmpty
+    @Size(max = 50)
+    private String firstName;
+
+    @NotEmpty
+    @Size(max = 50)
+    private String lastName;
+
+    @NotEmpty
     private String addressLine1;
 
     private String addressLine2;
