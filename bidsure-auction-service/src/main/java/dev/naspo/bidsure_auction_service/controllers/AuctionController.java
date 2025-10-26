@@ -1,5 +1,6 @@
 package dev.naspo.bidsure_auction_service.controllers;
 
+import dev.naspo.bidsure_auction_service.models.ItemImage;
 import dev.naspo.bidsure_auction_service.services.HibernateManager;
 import dev.naspo.bidsure_auction_service.dto.AuctionDTO;
 import dev.naspo.bidsure_auction_service.models.Auction;
@@ -49,6 +50,15 @@ public class AuctionController {
             // Persist.
             session.persist(auction);
             session.getTransaction().commit();
+
+            // Start a new transaction to persist the images.
+            session.beginTransaction();
+            for (ItemImage image : auctionDTO.getItemImages()) {
+                image.setAuctionId(auction.getId());
+                session.persist(image);
+            }
+            session.getTransaction().commit();
+
             return ResponseEntity.status(HttpStatus.CREATED).body(auction);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
