@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -35,6 +36,7 @@ public class AuctionProcessingService {
     // API URLS
     private final String WINNING_BID_URL_BASE = "http://localhost:8080/bids/winning-bid/auction/";
     private final String PAYMENT_METHOD_URL_BASE = "http://localhost:8080/payments/payment-methods/user/";
+    private final String PAYMENT_PROCESSING_UL = "http://localhost:8080/payments/processing";
     private final String CREATE_ORDER_URL = "http://localhost:8080/orders";
 
     // Checks every minute for auctions that are expired and not-processed.
@@ -134,8 +136,23 @@ public class AuctionProcessingService {
         return null;
     }
 
-    // Make a network request to create an order for an auction.
+    // Call to process payment, and if success, create order.
     private void createOrder(Auction auction, Bid winningBid, PaymentMethod paymentMethod, Address address) {
+        // 1. Call to process payment.
+        // Add tax to get total.
+        BigDecimal total = winningBid.getBidAmount().multiply(BigDecimal.valueOf(1.13));
+        // Build transaction.
+        Transaction transaction = new Transaction(total, paymentMethod);
+        // Call to process payment.
+        HttpResponse<String> paymentProcessingResponse = processPayment(transaction);
+        // If the payment failed, exit.
+        if (paymentProcessingResponse == null ||
+                (paymentProcessingResponse.statusCode() != 200 && paymentProcessingResponse.statusCode() != 201)) {
+            System.err.println("Failed to process payment!");
+            return;
+        }
+
+        // 2. Create order.
         // Construct the JSON Body.
         OrderDTO orderDTO = new OrderDTO(
                 winningBid.getBidAmount(),
@@ -170,6 +187,30 @@ public class AuctionProcessingService {
         } catch (Exception e) {
             System.err.println("Request to create the order failed!");
         }
+    }
+
+    // Make a network request to process a payment.
+    private HttpResponse<String> processPayment(Transaction transaction) {
+        String jsonBody;
+        try {
+            jsonBody = objectMapper.writeValueAsString(transaction);
+        } catch (JsonProcessingException e) {
+            System.err.println("Error processing JSON body for payment processing request.");
+            return null;
+        }
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(PAYMENT_PROCESSING_UL))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        try {
+            return client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            System.err.println("Request to process payment failed!");
+        }
+        return null;
     }
 
     // Marks an auction as processed in the database.
