@@ -2,7 +2,8 @@
 
 The backend for the BidSure auction web application.
 
-This is a university project for the course ITEC-4020.
+BidSure is a 4th-year university group project for the course ITEC-4020.
+My primary responsibility for the project was to design and develop the backend.
 
 ### Architecture
 
