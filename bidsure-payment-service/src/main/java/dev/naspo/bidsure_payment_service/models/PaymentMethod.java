@@ -38,10 +38,10 @@ public class PaymentMethod {
             message = "Expiry date must be in the format MMYY and have a valid month (01–12)"
     )
     @Column(name = "exp_date")
-    private String expiry_date;
+    private String expiryDate;
 
     @Pattern(
-            regexp = "^\\d{4}$",
+            regexp = "^\\d{3}$",
             message = "CVV must be exactly 3 digits"
     )
     private String cvv;

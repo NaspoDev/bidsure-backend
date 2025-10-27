@@ -13,25 +13,24 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/users/{userId}/addresses")
+@RequestMapping("/users/addresses")
 public class AddressController {
 
     @Autowired
     HibernateManager hibernateManager;
 
     @PostMapping
-    public ResponseEntity<Address> createAddress(@PathVariable int userId, @Valid @RequestBody Address address) {
+    public ResponseEntity<Address> createAddress(@Valid @RequestBody Address address) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
-            // First find the user.
-            User user = session.find(User.class, userId);
+            // First find the provided user to confirm they exist.
+            User user = session.find(User.class, address.getUserId());
             if (user == null) {
                 return ResponseEntity.notFound().build();
             }
 
-            // Set the user on the Addres, then persist.
-            address.setUserId(user.getId());
+            // Persist the address.
             session.persist(address);
 
             session.getTransaction().commit();
@@ -42,7 +41,7 @@ public class AddressController {
     }
 
     // Returns all addresses for the user.
-    @GetMapping
+    @GetMapping("/user-addresses")
     public ResponseEntity<List<Address>> getUserAddresses(@PathVariable int userId) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();

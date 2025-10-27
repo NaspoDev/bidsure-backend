@@ -14,7 +14,7 @@ import org.hibernate.validator.constraints.Length;
 @Table(name = "Addresses")
 public class Address {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @NotEmpty
