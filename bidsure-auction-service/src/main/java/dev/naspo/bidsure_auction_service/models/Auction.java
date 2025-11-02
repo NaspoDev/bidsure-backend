@@ -38,8 +38,8 @@ public class Auction {
     @Column(name = "starting_price")
     private BigDecimal startingPrice;
 
-    @Column(name = "dutch_increments")
-    private Integer dutchIncrements;
+    @Column(name = "updated_dutch_price")
+    private BigDecimal updatedDutchPrice;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;

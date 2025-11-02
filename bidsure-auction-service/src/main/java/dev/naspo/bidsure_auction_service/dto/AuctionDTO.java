@@ -30,7 +30,7 @@ public class AuctionDTO {
     @NotNull
     private BigDecimal startingPrice;
 
-    private Integer dutchIncrements;
+    private BigDecimal updatedDutchPrice;
 
     @NotNull
     private LocalDateTime startingTime;
