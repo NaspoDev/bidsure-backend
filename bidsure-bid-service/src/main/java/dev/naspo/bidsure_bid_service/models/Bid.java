@@ -25,9 +25,6 @@ public class Bid {
     @Column(name = "placed_at", insertable = false, updatable = false)
     private LocalDateTime placedAt;
 
-    @Column(name = "withdrawn_at")
-    private LocalDateTime withdrawnAt;
-
     @NotNull
     @Column(name = "is_winning")
     private Boolean isWinning;
