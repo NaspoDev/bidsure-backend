@@ -41,7 +41,7 @@ public class AddressController {
     }
 
     // Returns all addresses for the user.
-    @GetMapping("/user-addresses")
+    @GetMapping("/user-addresses/{userId}")
     public ResponseEntity<List<Address>> getUserAddresses(@PathVariable int userId) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
