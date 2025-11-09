@@ -41,7 +41,7 @@ public class AuctionController {
             auction.setItemDescription(auctionDTO.getItemDescription());
             auction.setItemCondition(auctionDTO.getItemCondition());
             auction.setStartingPrice(auctionDTO.getStartingPrice());
-            auction.setDutchIncrements(auctionDTO.getDutchIncrements());
+            auction.setUpdatedDutchPrice(auctionDTO.getUpdatedDutchPrice());
             auction.setStartingTime(auctionDTO.getStartingTime());
             auction.setEndTime(auctionDTO.getEndTime());
             auction.setProcessed(auctionDTO.isProcessed());
@@ -136,7 +136,7 @@ public class AuctionController {
             auction.setItemDescription(updatedAuctionDTO.getItemDescription());
             auction.setItemCondition(updatedAuctionDTO.getItemCondition());
             auction.setStartingPrice(updatedAuctionDTO.getStartingPrice());
-            auction.setDutchIncrements(updatedAuctionDTO.getDutchIncrements());
+            auction.setUpdatedDutchPrice(updatedAuctionDTO.getUpdatedDutchPrice());
             auction.setStartingTime(updatedAuctionDTO.getStartingTime());
             auction.setEndTime(updatedAuctionDTO.getEndTime());
             auction.setProcessed(updatedAuctionDTO.isProcessed());
