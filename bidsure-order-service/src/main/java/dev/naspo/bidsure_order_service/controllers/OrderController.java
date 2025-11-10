@@ -19,6 +19,9 @@ public class OrderController {
     @Autowired
     HibernateManager hibernateManager;
 
+    // Endpoint to create an order.
+    // This is only expected to be called by the Auction Service. Orders are never created
+    // directly from the client.
     @PostMapping
     public ResponseEntity<Order> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {

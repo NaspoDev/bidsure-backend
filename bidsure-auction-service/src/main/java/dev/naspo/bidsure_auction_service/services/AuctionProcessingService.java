@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 // Responsible for processing auctions when they expire.
+// This involves charging the winner and creating an order once payment has been completed.
 @Service
 public class AuctionProcessingService {
 
