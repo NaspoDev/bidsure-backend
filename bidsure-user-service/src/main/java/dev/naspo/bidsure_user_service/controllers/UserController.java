@@ -1,6 +1,7 @@
 package dev.naspo.bidsure_user_service.controllers;
 
 import dev.naspo.bidsure_user_service.HibernateManager;
+import dev.naspo.bidsure_user_service.dto.UserCredentialsPayload;
 import dev.naspo.bidsure_user_service.models.User;
 import jakarta.validation.Valid;
 import org.hibernate.Session;
@@ -16,6 +17,7 @@ public class UserController {
     @Autowired
     HibernateManager hibernateManager;
 
+    // Create new user.
     @PostMapping
     public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
@@ -28,6 +30,7 @@ public class UserController {
         }
     }
 
+    // Get user by id.
     @GetMapping("/{id}")
     public ResponseEntity<User> getUser(@PathVariable int id) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
@@ -35,6 +38,29 @@ public class UserController {
 
             // Query for the user.
             User user = session.find(User.class, id);
+            session.getTransaction().commit();
+
+            if (user != null) {
+                return ResponseEntity.ok(user);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // User login
+    @PostMapping
+    public ResponseEntity<User> userLogin(@Valid @RequestBody UserCredentialsPayload credentials) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
+            session.beginTransaction();
+
+            User user = session.createQuery("from User u where u.email = :uEmail and u.password = :uPassword",
+                            User.class)
+                    .setParameter("uEmail", credentials.getEmail())
+                    .setParameter("uPassword", credentials.getPassword())
+                    .getSingleResult();
+
             session.getTransaction().commit();
 
             if (user != null) {
