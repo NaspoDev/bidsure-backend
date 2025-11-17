@@ -50,7 +50,7 @@ public class UserController {
     }
 
     // User login
-    @PostMapping("login")
+    @PostMapping("/login")
     public ResponseEntity<User> userLogin(@Valid @RequestBody UserCredentialsPayload credentials) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
