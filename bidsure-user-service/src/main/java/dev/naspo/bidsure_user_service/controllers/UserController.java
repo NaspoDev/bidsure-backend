@@ -18,7 +18,7 @@ public class UserController {
     HibernateManager hibernateManager;
 
     // Create new user.
-    @PostMapping
+    @PostMapping("/sign-up")
     public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
@@ -50,7 +50,7 @@ public class UserController {
     }
 
     // User login
-    @PostMapping
+    @PostMapping("login")
     public ResponseEntity<User> userLogin(@Valid @RequestBody UserCredentialsPayload credentials) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
