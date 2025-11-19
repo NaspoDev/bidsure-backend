@@ -1,9 +1,14 @@
+# Application configuration for 'DEV' environment
+
 server:
   port: 8080
 
 spring:
   application:
     name: bidsure-gateway
+  config:
+    activate:
+      on-profile: dev
   cloud:
     gateway:
       routes:
@@ -31,7 +36,6 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins:
-              - "https://prod-url.com" # prod
-              - "http://localhost:3000" # dev
+              - "http://localhost:3000"
             allowedMethods: "*"
             allowedHeaders: "*"

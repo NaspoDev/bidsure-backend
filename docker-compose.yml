@@ -7,45 +7,45 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - bidsure-user-service
-      - bidsure-auction-service
-      - bidsure-bid-service
-      - bidsure-order-service
-      - bidsure-payment-service
-    env_file: "./env.properties"
+      - user-service
+      - auction-service
+      - bid-service
+      - order-service
+      - payment-service
+    env_file: "./env-prod.properties"
 
   user-service:
     build: ./bidsure-user-service
     container_name: bidsure-user-service
     ports:
       - "8081:8081"
-    env_file: "./env.properties"
+    env_file: "./env-prod.properties"
 
   auction-service:
     build: ./bidsure-auction-service
     container_name: bidsure-auction-service
     ports:
       - "8082:8082"
-    env_file: "./env.properties"
+    env_file: "./env-prod.properties"
 
   bid-service:
     build: ./bidsure-bid-service
     container_name: bidsure-bid-service
     ports:
       - "8083:8083"
-    env_file: "./env.properties"
+    env_file: "./env-prod.properties"
 
   order-service:
     build: ./bidsure-order-service
     container_name: bidsure-order-service
     ports:
       - "8084:8084"
-    env_file: "./env.properties"
+    env_file: "./env-prod.properties"
 
   payment-service:
     build: ./bidsure-payment-service
     container_name: bidsure-payment-service
     ports:
       - "8085:8085"
-    env_file: "./env.properties"
+    env_file: "./env-prod.properties"
 

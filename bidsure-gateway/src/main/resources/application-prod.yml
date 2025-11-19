@@ -1,0 +1,41 @@
+# Application configuration for 'PROD' environment
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: bidsure-gateway
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: http://user-service:8081
+          predicates:
+            - Path=/users/**
+        - id: auction-service
+          uri: http://acution-service:8082
+          predicates:
+            - Path=/auctions/**
+        - id: bid-service
+          uri: http://bid-service:8083
+          predicates:
+            - Path=/bids/**
+        - id: order-service
+          uri: http://order-service:8084
+          predicates:
+            - Path=/orders/**
+        - id: payment-service
+          uri: http://payment-service:8085
+          predicates:
+            - Path=/payments/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "https://prod-url.com"
+            allowedMethods: "*"
+            allowedHeaders: "*"
