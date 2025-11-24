@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -104,7 +105,7 @@ public class AuctionController {
 
     // Get all auctions. Typically used for browsing.
     @GetMapping
-    public ResponseEntity<List<Auction>> getAllAuctions() {
+    public ResponseEntity<List<AuctionDTO>> getAllAuctions() {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
@@ -113,7 +114,39 @@ public class AuctionController {
                     .getResultList();
 
             session.getTransaction().commit();
-            return ResponseEntity.ok(auctions);
+
+            // Start a new transaction to get item images for each auction.
+            // (And convert each Auction to AuctionDTO).
+            session.beginTransaction();
+
+            // Convert auctions list to AuctionDTO list.
+            List<AuctionDTO> result = new ArrayList<>();
+            for (Auction auction : auctions) {
+                AuctionDTO auctionDTO = new AuctionDTO();
+                auctionDTO.setId(auction.getId());
+                auctionDTO.setAuctionType(auction.getAuctionType());
+                auctionDTO.setTitle(auction.getTitle());
+                auctionDTO.setItemDescription(auction.getItemDescription());
+                auctionDTO.setItemCondition(auction.getItemCondition());
+                auctionDTO.setStartingPrice(auction.getStartingPrice());
+                auctionDTO.setUpdatedDutchPrice(auction.getUpdatedDutchPrice());
+                auctionDTO.setStartingTime(auction.getStartingTime());
+                auctionDTO.setEndTime(auction.getEndTime());
+                auctionDTO.setSellerId(auction.getSeller().getId());
+
+                // Get the auction's item images.
+                List<ItemImage> itemImages = session.createQuery("from ItemImage ii where ii.auctionId = :auctionId", ItemImage.class)
+                        .setParameter("auctionId", auction.getId())
+                        .getResultList();
+
+                auctionDTO.setItemImages(itemImages);
+
+                result.add(auctionDTO);
+            }
+
+            session.getTransaction().commit();
+
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

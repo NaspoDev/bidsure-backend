@@ -15,6 +15,8 @@ import java.util.List;
 @Setter
 public class AuctionDTO {
 
+    private int id;
+
     @NotEmpty
     private String auctionType;
 

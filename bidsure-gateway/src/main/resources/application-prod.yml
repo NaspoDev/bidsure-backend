@@ -17,7 +17,7 @@ spring:
           predicates:
             - Path=/users/**
         - id: auction-service
-          uri: http://acution-service:8082
+          uri: http://auction-service:8082
           predicates:
             - Path=/auctions/**
         - id: bid-service
@@ -36,6 +36,6 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins:
-              - "https://prod-url.com"
+              - "*"
             allowedMethods: "*"
             allowedHeaders: "*"
