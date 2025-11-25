@@ -22,7 +22,34 @@ public class BidController {
     public ResponseEntity<Bid> createBid(@Valid @RequestBody Bid bid) {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
-            session.persist(bid);
+
+            // Unmark the current bid as winning if applicable.
+            List<Bid> winningBidQueryResult = session.createQuery(
+                            "from Bid b where b.auctionId = :auctionId and b.isWinning = true", Bid.class)
+                    .setParameter("auctionId", bid.getAuctionId())
+                    .setMaxResults(1)
+                    .getResultList();
+
+            // If there is no previous bid, just persist it.
+            if (winningBidQueryResult.isEmpty()) {
+                // Persist the new bid.
+                bid.setIsWinning(true); // ensure it's set as winning
+                session.persist(bid);
+            } else {
+                Bid currentWinningBid = winningBidQueryResult.getFirst();
+
+                // If the new bid isn't higher than the current winning bid, then it's a bad request.
+                if (bid.getBidAmount().compareTo(currentWinningBid.getBidAmount()) < 1) {
+                    return ResponseEntity.badRequest().build();
+                }
+
+                // Otherwise unset the current winning bid as winning.
+                currentWinningBid.setIsWinning(false);
+                // Persist the new bid.
+                bid.setIsWinning(true); // ensure it's set as winning
+                session.persist(bid);
+            }
+
             session.getTransaction().commit();
             return ResponseEntity.status(HttpStatus.CREATED).body(bid);
         } catch (Exception e) {
@@ -76,16 +103,14 @@ public class BidController {
 
             // Query for the bid.
             Bid bid = session.createQuery(
-                    "from Bid b where b.auctionId = :auctionId and b.isWinning = true", Bid.class)
+                            "from Bid b where b.auctionId = :auctionId and b.isWinning = true", Bid.class)
                     .setParameter("auctionId", auctionId)
                     .getSingleResult();
 
             session.getTransaction().commit();
 
-            if (bid != null) {
-                return ResponseEntity.ok(bid);
-            }
-            return ResponseEntity.notFound().build();
+            // Return the winning bid, even if its null.
+            return ResponseEntity.ok(bid);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

@@ -34,8 +34,8 @@ public class PaymentMethod {
     private String cardNumber;
 
     @Pattern(
-            regexp = "^(0[1-9]|1[0-2])\\d{2}$",
-            message = "Expiry date must be in the format MMYY and have a valid month (01–12)"
+            regexp = "^(0[1-9]|1[0-2])\\/\\d{2}$",
+            message = "Expiry date must be in the format MM/YY and have a valid month (01–12)"
     )
     @Column(name = "exp_date")
     private String expiryDate;

@@ -46,9 +46,9 @@ public class AddressController {
         try (Session session = hibernateManager.getSessionFactory().openSession()) {
             session.beginTransaction();
 
-            List<Address> addresses = session.createQuery("from Address a where a.user.id = :userId", Address.class)
+            List<Address> addresses = session.createQuery("from Address a where a.userId = :userId", Address.class)
                     .setParameter("userId", userId)
-                    .list();
+                    .getResultList();
 
             session.getTransaction().commit();
             return ResponseEntity.ok(addresses);
