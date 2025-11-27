@@ -1,6 +1,8 @@
 package dev.naspo.bidsure_auction_service.controllers;
 
+import dev.naspo.bidsure_auction_service.models.Bid;
 import dev.naspo.bidsure_auction_service.models.ItemImage;
+import dev.naspo.bidsure_auction_service.services.AuctionProcessingService;
 import dev.naspo.bidsure_auction_service.services.HibernateManager;
 import dev.naspo.bidsure_auction_service.dto.AuctionDTO;
 import dev.naspo.bidsure_auction_service.models.Auction;
@@ -21,6 +23,9 @@ public class AuctionController {
 
     @Autowired
     HibernateManager hibernateManager;
+
+    @Autowired
+    AuctionProcessingService auctionProcessingService;
 
     @PostMapping
     public ResponseEntity<Auction> createAuction(@Valid @RequestBody AuctionDTO auctionDTO) {
@@ -110,8 +115,10 @@ public class AuctionController {
             session.beginTransaction();
 
             // Query for the auctions.
-            List<Auction> auctions = session.createQuery("from Auction", Auction.class)
+            List<Auction> auctions = session.createQuery("from Auction a where a.processed = false", Auction.class)
                     .getResultList();
+
+            System.out.println("auctions len: " + auctions.size());
 
             session.getTransaction().commit();
 
@@ -196,6 +203,38 @@ public class AuctionController {
             session.remove(auction);
             session.getTransaction().commit();
             return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // "Bids" (buy-now orders) on Dutch auctions are called here to process the auction.
+    @PostMapping("/purchase-dutch-auction")
+    public ResponseEntity<String> purchaseDutchAuction(@Valid @RequestBody Bid bid) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
+            session.beginTransaction();
+
+            // Get the Dutch auction associated with the bid.
+            Auction auction = session.find(Auction.class, bid.getAuctionId());
+
+            if (auction == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // If the auction isn't a dutch auction, response with Bad Request.
+            if (!auction.getAuctionType().equals("dutch")) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Persist the bid.
+            session.persist(bid);
+
+            session.getTransaction().commit();
+
+            // Call to process the auction.
+            auctionProcessingService.processAuction(auction);
+
+            return ResponseEntity.ok("Dutch auction purchase successful.");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

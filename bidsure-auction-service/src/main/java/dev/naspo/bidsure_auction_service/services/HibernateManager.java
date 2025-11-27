@@ -1,6 +1,7 @@
 package dev.naspo.bidsure_auction_service.services;
 
 import dev.naspo.bidsure_auction_service.models.Auction;
+import dev.naspo.bidsure_auction_service.models.Bid;
 import dev.naspo.bidsure_auction_service.models.ItemImage;
 import dev.naspo.bidsure_auction_service.models.User;
 import jakarta.annotation.PreDestroy;
@@ -41,6 +42,7 @@ public class HibernateManager {
                 .setProperty(AvailableSettings.FORMAT_SQL, true)
                 .setProperty(AvailableSettings.HIGHLIGHT_SQL, true)
                 .addAnnotatedClass(Auction.class)
+                .addAnnotatedClass(Bid.class)
                 .addAnnotatedClass(User.class)
                 .addAnnotatedClass(ItemImage.class)
                 .buildSessionFactory();

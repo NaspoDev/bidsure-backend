@@ -35,14 +35,14 @@ public class PaymentMethod {
 
     @Pattern(
             regexp = "^(0[1-9]|1[0-2])\\d{2}$",
-            message = "Expiry date must be in the format MMYY and have a valid month (01–12)"
+            message = "Expiry date must be in the format MM/YY and have a valid month (01–12)"
     )
     @Column(name = "exp_date")
-    private String expiry_date;
+    private String expiryDate;
 
     @Pattern(
-            regexp = "^\\d{4}$",
-            message = "CVV must be exactly 3 digits"
+            regexp = "^\\d{3,4}$",
+            message = "CVV must be 3-4 digits"
     )
     private String cvv;
 

@@ -35,10 +35,11 @@ public class AuctionProcessingService {
     private final HttpClient client = HttpClient.newHttpClient();
 
     // API URLS
-    private final String WINNING_BID_URL_BASE = "http://localhost:8080/bids/winning-bid/auction/";
-    private final String PAYMENT_METHOD_URL_BASE = "http://localhost:8080/payments/payment-methods/user/";
-    private final String PAYMENT_PROCESSING_UL = "http://localhost:8080/payments/processing";
-    private final String CREATE_ORDER_URL = "http://localhost:8080/orders";
+    private final String WINNING_BID_URL_BASE = "http://gateway:8080/bids/winning-bid/auction/";
+    private final String PAYMENT_METHOD_URL_BASE = "http://gateway:8080/payments/payment-methods/user/";
+    private final String USER_ADDRESSES_URL_BASE = "http://gateway:8080/users/addresses/user-addresses/";
+    private final String PAYMENT_PROCESSING_UL = "http://gateway:8080/payments/processing";
+    private final String CREATE_ORDER_URL = "http://gateway:8080/orders";
 
     // Checks every minute for auctions that are expired and not-processed.
     @Scheduled(fixedRate = 60000)
@@ -63,12 +64,18 @@ public class AuctionProcessingService {
 
     // Processes an action.
     // This involves charging the winner and creating an order once payment has been completed.
-    private void processAuction(Auction auction) {
+    public void processAuction(Auction auction) {
         Bid winningBid = getWinningBid(auction);
-        PaymentMethod paymentMethod = getPaymentMethod(auction.getSeller());
-        Address address = getAddress(auction.getSeller());
 
-        if (winningBid != null && paymentMethod != null && address != null) {
+        if (winningBid == null) {
+            System.err.println("Winning bid is null!");
+            return;
+        }
+
+        PaymentMethod paymentMethod = getPaymentMethod(winningBid.getUserId());
+        Address address = getAddress(winningBid.getUserId());
+
+        if (paymentMethod != null && address != null) {
             createOrder(auction, winningBid, paymentMethod, address);
         }
     }
@@ -83,56 +90,57 @@ public class AuctionProcessingService {
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
-                System.err.println("Request to get winning bid failed!");
+                System.err.println("01 - Request to get winning bid failed!");
             } else {
                 return objectMapper.readValue(response.body(), Bid.class);
             }
         } catch (Exception e) {
-            System.err.println("Request to get winning bid failed!");
+            System.err.println("02 - Request to get winning bid failed!");
+            e.printStackTrace();
         }
         return null;
     }
 
     // Make a network request to get a user's payment method.
-    private PaymentMethod getPaymentMethod(User user) {
+    private PaymentMethod getPaymentMethod(int userId) {
         // Build the request.
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(PAYMENT_METHOD_URL_BASE + user.getId()))
+                .uri(URI.create(PAYMENT_METHOD_URL_BASE + userId))
                 .build();
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
-                System.err.println("Request to get payment method failed!");
+                System.err.println("01 - Request to get payment method failed!");
             } else {
                 // Currently just using the first payment method we get, no preference set.
                 List<PaymentMethod> paymentMethods = objectMapper.readValue(response.body(), new TypeReference<List<PaymentMethod>>() {});
                 return paymentMethods.getFirst();
             }
         } catch (Exception e) {
-            System.err.println("Request to get payment method failed!");
+            System.err.println("02 - Request to get payment method failed!");
         }
         return null;
     }
 
     // Make a network request to get a user's address.
-    private Address getAddress(User user) {
+    private Address getAddress(int userId) {
         // Build the request.
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8080/users/" + user.getId() + "/addresses"))
+                .uri(URI.create(USER_ADDRESSES_URL_BASE + userId))
                 .build();
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
-                System.err.println("Request to get address failed!");
+                System.err.println("01 - Request to get address failed!");
             } else {
                 // Currently just using the first address we get, no preference set.
                 List<Address> addresses = objectMapper.readValue(response.body(), new TypeReference<List<Address>>() {});
                 return addresses.getFirst();
             }
         } catch (Exception e) {
-            System.err.println("Request to get address failed!");
+            System.err.println("02 - Request to get address failed!");
         }
         return null;
     }
