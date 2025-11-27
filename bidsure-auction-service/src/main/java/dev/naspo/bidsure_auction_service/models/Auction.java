@@ -23,8 +23,8 @@ public class Auction {
     @Column(name = "auction_type")
     private String auctionType;
 
-   @NotEmpty
-   private String title;
+    @NotEmpty
+    private String title;
 
     @NotEmpty
     @Column(name = "item_description")
@@ -55,6 +55,7 @@ public class Auction {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    @Column(name = "processed")
     private boolean processed;
 
     @ManyToOne

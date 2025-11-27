@@ -55,6 +55,7 @@ public class Auction {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    @Column(name = "processed")
     private boolean processed;
 
     @ManyToOne
