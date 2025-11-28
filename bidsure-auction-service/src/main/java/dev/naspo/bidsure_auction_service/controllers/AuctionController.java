@@ -1,5 +1,6 @@
 package dev.naspo.bidsure_auction_service.controllers;
 
+import dev.naspo.bidsure_auction_service.dto.UpdateDutchAuctionPriceRequest;
 import dev.naspo.bidsure_auction_service.models.Bid;
 import dev.naspo.bidsure_auction_service.models.ItemImage;
 import dev.naspo.bidsure_auction_service.services.AuctionProcessingService;
@@ -8,6 +9,7 @@ import dev.naspo.bidsure_auction_service.dto.AuctionDTO;
 import dev.naspo.bidsure_auction_service.models.Auction;
 import dev.naspo.bidsure_auction_service.models.User;
 import jakarta.validation.Valid;
+import org.apache.coyote.Response;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -182,6 +184,33 @@ public class AuctionController {
             auction.setProcessed(updatedAuctionDTO.isProcessed());
 
             session.getTransaction().commit();
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PutMapping("/update-dutch-price/{id}")
+    public ResponseEntity<String> updateDutchAuctionPrice(@PathVariable int id, @Valid @RequestBody UpdateDutchAuctionPriceRequest request) {
+        try (Session session = hibernateManager.getSessionFactory().openSession()) {
+            session.beginTransaction();
+
+            // First find the Auction.
+            Auction auction = session.find(Auction.class, id);
+            if (auction == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // If its not a dutch auction, return bad request.
+            if (!auction.getAuctionType().equals("dutch")) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Update
+            auction.setUpdatedDutchPrice(request.getUpdatedPrice());
+
+            session.getTransaction().commit();
+            
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
