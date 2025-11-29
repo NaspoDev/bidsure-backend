@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,7 +97,13 @@ public class AuctionService {
 
     @Transactional
     public List<Auction> getExpiredNonProcessedAuctions() {
+        return auctionRepository.findExpiredNonProcessedAuctions(LocalDateTime.now());
+    }
 
+    @Transactional
+    public void markAuctionAsProcessed(Auction auction) {
+        auction.setProcessed(true);
+        auctionRepository.save(auction);
     }
 
     /**

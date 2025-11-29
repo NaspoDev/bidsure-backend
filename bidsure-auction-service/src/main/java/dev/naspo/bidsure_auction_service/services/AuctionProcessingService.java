@@ -105,7 +105,7 @@ public class AuctionProcessingService {
                 System.err.println("01 - Request to get payment method failed!");
             } else {
                 // Currently just using the first payment method we get, no preference set.
-                List<PaymentMethod> paymentMethods = objectMapper.readValue(response.body(), new TypeReference<List<PaymentMethod>>() {
+                List<PaymentMethod> paymentMethods = objectMapper.readValue(response.body(), new TypeReference<>() {
                 });
                 return paymentMethods.getFirst();
             }
@@ -128,7 +128,7 @@ public class AuctionProcessingService {
                 System.err.println("01 - Request to get address failed!");
             } else {
                 // Currently just using the first address we get, no preference set.
-                List<Address> addresses = objectMapper.readValue(response.body(), new TypeReference<List<Address>>() {
+                List<Address> addresses = objectMapper.readValue(response.body(), new TypeReference<>() {
                 });
                 return addresses.getFirst();
             }
@@ -217,13 +217,6 @@ public class AuctionProcessingService {
 
     // Marks an auction as processed in the database.
     private void markAuctionAsProcessed(Auction auction) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
-
-            auction.setProcessed(true);
-            session.merge(auction);
-
-            session.getTransaction().commit();
-        }
+        auctionService.markAuctionAsProcessed(auction);
     }
 }
