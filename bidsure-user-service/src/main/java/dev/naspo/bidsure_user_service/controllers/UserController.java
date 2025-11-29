@@ -39,7 +39,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable int id, @Valid @RequestBody User updatedUser) {
+    public ResponseEntity<User> updateUser(@Valid @RequestBody User updatedUser) {
         userService.updateUser(updatedUser);
         return ResponseEntity.noContent().build();
     }
