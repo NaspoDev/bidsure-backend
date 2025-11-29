@@ -15,6 +15,6 @@ public interface AuctionRepository extends JpaRepository<Auction, Integer> {
     List<Auction> findAllUserAuctions(int userId);
 
     @Modifying
-    @Query("update Auction a set a.updatedDutchPrice = ?2 where a.id = ?1")
+    @Query("update Auction a set a.updatedDutchPrice = ?2 where a.id = ?1 and a.auctionType = 'dutch'")
     void updateDutchAuctionPrice(int auctionId, BigDecimal updatedPrice);
 }

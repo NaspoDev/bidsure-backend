@@ -10,6 +10,7 @@ import dev.naspo.bidsure_auction_service.models.Auction;
 import dev.naspo.bidsure_auction_service.models.User;
 import dev.naspo.bidsure_auction_service.services.AuctionService;
 import jakarta.validation.Valid;
+import org.apache.catalina.connector.Response;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -84,108 +85,41 @@ public class AuctionController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Auction> updateAuction(@PathVariable int id, @Valid @RequestBody AuctionDTO updatedAuctionDTO) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
+        // Get an Auction from the AuctionDTO.
+        Auction auction = AuctionDTO.toEntity(updatedAuctionDTO);
+        auction.setSeller(getUserById(updatedAuctionDTO.getSellerId()));
 
-            // First find the Auction.
-            Auction auction = session.find(Auction.class, id);
-            if (auction == null) {
-                return ResponseEntity.notFound().build();
-            }
+        // Call to update the auction.
+        auctionService.updateAuction(auction);
 
-            // Update the auction based on DTO.
-            auction.setAuctionType(updatedAuctionDTO.getAuctionType());
-            auction.setTitle(updatedAuctionDTO.getTitle());
-            auction.setItemDescription(updatedAuctionDTO.getItemDescription());
-            auction.setItemCondition(updatedAuctionDTO.getItemCondition());
-            auction.setStartingPrice(updatedAuctionDTO.getStartingPrice());
-            auction.setUpdatedDutchPrice(updatedAuctionDTO.getUpdatedDutchPrice());
-            auction.setStartingTime(updatedAuctionDTO.getStartingTime());
-            auction.setEndTime(updatedAuctionDTO.getEndTime());
-            auction.setProcessed(updatedAuctionDTO.isProcessed());
-
-            session.getTransaction().commit();
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/update-dutch-price/{id}")
     public ResponseEntity<String> updateDutchAuctionPrice(@PathVariable int id, @Valid @RequestBody UpdateDutchAuctionPriceRequest request) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
-
-            // First find the Auction.
-            Auction auction = session.find(Auction.class, id);
-            if (auction == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            // If its not a dutch auction, return bad request.
-            if (!auction.getAuctionType().equals("dutch")) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            // Update
-            auction.setUpdatedDutchPrice(request.getUpdatedPrice());
-
-            session.getTransaction().commit();
-
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        auctionService.updateDutchAuctionPrice(id, request.getUpdatedPrice());
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAuction(@PathVariable int id) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
-
-            // First find the auction.
-            Auction auction = session.find(Auction.class, id);
-            if (auction == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            // Delete
-            session.remove(auction);
-            session.getTransaction().commit();
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        auctionService.deleteAuction(id);
+        return ResponseEntity.ok().build();
     }
 
     // "Bids" (buy-now orders) on Dutch auctions are called here to process the auction.
     @PostMapping("/purchase-dutch-auction")
     public ResponseEntity<String> purchaseDutchAuction(@Valid @RequestBody Bid bid) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
+        // Get the auction.
+        Optional<Auction> auction = auctionService.getAuctionById(bid.getAuctionId());
+        if (auction.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
 
-            // Get the Dutch auction associated with the bid.
-            Auction auction = session.find(Auction.class, bid.getAuctionId());
-
-            if (auction == null) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            // If the auction isn't a dutch auction, response with Bad Request.
-            if (!auction.getAuctionType().equals("dutch")) {
-                return ResponseEntity.badRequest().build();
-            }
-
-            // Persist the bid.
-            session.persist(bid);
-
-            session.getTransaction().commit();
-
-            // Call to process the auction.
-            auctionProcessingService.processAuction(auction);
-
-            return ResponseEntity.ok("Dutch auction purchase successful.");
-        } catch (Exception e) {
+        // Call to fulfill logic to purchase the Dutch auction.
+        if (auctionService.purchaseDutchAuction(bid, auction.get())) {
+            return ResponseEntity.ok().build();
+        } else {
             return ResponseEntity.internalServerError().build();
         }
     }
