@@ -21,16 +21,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 // Responsible for processing auctions when they expire.
+
 // This involves charging the winner and creating an order once payment has been completed.
 @Service
 public class AuctionProcessingService {
 
     @Autowired
-    private HibernateManager hibernateManager;
-
+    private AuctionService auctionService;
     @Autowired
     private ObjectMapper objectMapper;
-
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     private final HttpClient client = HttpClient.newHttpClient();
 
@@ -44,23 +43,15 @@ public class AuctionProcessingService {
     // Checks every minute for auctions that are expired and not-processed.
     @Scheduled(fixedRate = 60000)
     private void findExpiredAuctions() {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
+        // Find expired auctions that have not been processed.
+        List<Auction> auctions = auctionService.getExpiredNonProcessedAuctions();
 
-            // Query for expired auctions that have not been processed.
-            List<Auction> auctions = session.createQuery(
-                            "from Auction a where a.endTime <= :currentTime and a.processed = false", Auction.class)
-                    .setParameter("currentTime", LocalDateTime.now())
-                    .getResultList();
-
-            session.getTransaction().commit();
-
-            // For each auction, call to process it.
-            for (Auction auction : auctions) {
-                executor.submit(() -> processAuction(auction));
-            }
+        // For each auction, call to process it.
+        for (Auction auction : auctions) {
+            executor.submit(() -> processAuction(auction));
         }
     }
+
 
     // Processes an action.
     // This involves charging the winner and creating an order once payment has been completed.
@@ -114,7 +105,8 @@ public class AuctionProcessingService {
                 System.err.println("01 - Request to get payment method failed!");
             } else {
                 // Currently just using the first payment method we get, no preference set.
-                List<PaymentMethod> paymentMethods = objectMapper.readValue(response.body(), new TypeReference<List<PaymentMethod>>() {});
+                List<PaymentMethod> paymentMethods = objectMapper.readValue(response.body(), new TypeReference<List<PaymentMethod>>() {
+                });
                 return paymentMethods.getFirst();
             }
         } catch (Exception e) {
@@ -136,7 +128,8 @@ public class AuctionProcessingService {
                 System.err.println("01 - Request to get address failed!");
             } else {
                 // Currently just using the first address we get, no preference set.
-                List<Address> addresses = objectMapper.readValue(response.body(), new TypeReference<List<Address>>() {});
+                List<Address> addresses = objectMapper.readValue(response.body(), new TypeReference<List<Address>>() {
+                });
                 return addresses.getFirst();
             }
         } catch (Exception e) {

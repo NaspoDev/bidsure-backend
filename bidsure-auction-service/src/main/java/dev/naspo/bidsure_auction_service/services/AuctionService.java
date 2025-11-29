@@ -94,6 +94,11 @@ public class AuctionService {
         }
     }
 
+    @Transactional
+    public List<Auction> getExpiredNonProcessedAuctions() {
+
+    }
+
     /**
      * Makes a network request to the bid service to persist a bid.
      *

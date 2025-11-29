@@ -1,8 +1,8 @@
 package dev.naspo.bidsure_order_service.controllers;
 
-import dev.naspo.bidsure_order_service.HibernateManager;
 import dev.naspo.bidsure_order_service.dto.OrderDTO;
 import dev.naspo.bidsure_order_service.models.*;
+import dev.naspo.bidsure_order_service.services.OrderService;
 import jakarta.validation.Valid;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +16,7 @@ import java.util.List;
 @RequestMapping("/orders")
 public class OrderController {
 
-    @Autowired
-    HibernateManager hibernateManager;
+    @Autowired private OrderService orderService;
 
     // Endpoint to create an order.
     // This is only expected to be called by the Auction Service. Orders are never created
