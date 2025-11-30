@@ -165,7 +165,7 @@ public class AuctionProcessingService {
         // Construct the JSON Body.
         OrderDTO orderDTO = new OrderDTO(
                 winningBid.getBidAmount(),
-                auction.getSeller().getId(),
+                winningBid.getUserId(),
                 paymentMethod.getId(),
                 address.getId(),
                 auction.getId()
