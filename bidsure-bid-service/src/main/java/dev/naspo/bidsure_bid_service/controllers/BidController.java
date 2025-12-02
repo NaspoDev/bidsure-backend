@@ -1,7 +1,7 @@
 package dev.naspo.bidsure_bid_service.controllers;
 
-import dev.naspo.bidsure_bid_service.HibernateManager;
 import dev.naspo.bidsure_bid_service.models.Bid;
+import dev.naspo.bidsure_bid_service.services.BidService;
 import jakarta.validation.Valid;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,151 +10,53 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/bids")
 public class BidController {
 
-    @Autowired
-    HibernateManager hibernateManager;
+    @Autowired private BidService bidService;
 
     @PostMapping
     public ResponseEntity<Bid> createBid(@Valid @RequestBody Bid bid) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
-
-            // Unmark the current bid as winning if applicable.
-            List<Bid> winningBidQueryResult = session.createQuery(
-                            "from Bid b where b.auctionId = :auctionId and b.isWinning = true", Bid.class)
-                    .setParameter("auctionId", bid.getAuctionId())
-                    .setMaxResults(1)
-                    .getResultList();
-
-            // If there is no previous bid, just persist it.
-            if (winningBidQueryResult.isEmpty()) {
-                // Persist the new bid.
-                bid.setIsWinning(true); // ensure it's set as winning
-                session.persist(bid);
-            } else {
-                Bid currentWinningBid = winningBidQueryResult.getFirst();
-
-                // If the new bid isn't higher than the current winning bid, then it's a bad request.
-                if (bid.getBidAmount().compareTo(currentWinningBid.getBidAmount()) < 1) {
-                    return ResponseEntity.badRequest().build();
-                }
-
-                // Otherwise unset the current winning bid as winning.
-                currentWinningBid.setIsWinning(false);
-                // Persist the new bid.
-                bid.setIsWinning(true); // ensure it's set as winning
-                session.persist(bid);
-            }
-
-            session.getTransaction().commit();
-            return ResponseEntity.status(HttpStatus.CREATED).body(bid);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+        Optional<Bid> createdBid = bidService.createBid(bid);
+        if (createdBid.isEmpty()) {
+            return ResponseEntity.badRequest().build();
         }
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdBid.get());
     }
 
     // Get single bid by id.
     @GetMapping("/{id}")
     public ResponseEntity<Bid> getBid(@PathVariable int id) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
-
-            // Query for the bid.
-            Bid bid = session.find(Bid.class, id);
-            session.getTransaction().commit();
-
-            if (bid != null) {
-                return ResponseEntity.ok(bid);
-            }
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        Optional<Bid> bid = bidService.getBidById(id);
+        return bid.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     // Get all of a user's bids.
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Bid>> getUserBids(@PathVariable int userId) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
-
-            // Query for bids.
-            List<Bid> bids = session.createQuery("from Bid b where b.userId = :userId", Bid.class)
-                    .setParameter("userId", userId)
-                    .getResultList();
-
-            session.getTransaction().commit();
-
-            return ResponseEntity.ok(bids);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        List<Bid> bids = bidService.getUserBids(userId);
+        return ResponseEntity.ok(bids);
     }
 
     // Get the winning bid for an auction.
     @GetMapping("/winning-bid/auction/{auctionId}")
-    public ResponseEntity<Bid> getWinningBid(@PathVariable int auctionId) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
-
-            // Query for the bid.
-            Bid bid = session.createQuery(
-                            "from Bid b where b.auctionId = :auctionId and b.isWinning = true", Bid.class)
-                    .setParameter("auctionId", auctionId)
-                    .getSingleResult();
-
-            session.getTransaction().commit();
-
-            // Return the winning bid, even if its null.
-            return ResponseEntity.ok(bid);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+    public ResponseEntity<Bid> getWinningBidForAuction(@PathVariable int auctionId) {
+        Optional<Bid> bid = bidService.getWinningBidForAuction(auctionId);
+        return bid.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Bid> updateBid(@PathVariable int id, @Valid @RequestBody Bid updatedBid) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
-
-            // First find the bid.
-            if (session.find(Bid.class, id) == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            // Ensure the id of the updated bid provided in the request body matches that in the path.
-            updatedBid.setId(id);
-
-            // Merge and update.
-            session.merge(updatedBid);
-            session.getTransaction().commit();
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+    public ResponseEntity<Bid> updateBid(@Valid @RequestBody Bid updatedBid) {
+        bidService.updateBid(updatedBid);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBid(@PathVariable int id) {
-        try (Session session = hibernateManager.getSessionFactory().openSession()) {
-            session.beginTransaction();
-
-            // First find the bid.
-            Bid bid = session.find(Bid.class, id);
-            if (bid == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            // Delete
-            session.remove(bid);
-            session.getTransaction().commit();
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        bidService.deleteBid(id);
+        return ResponseEntity.ok().build();
     }
 }
